@@ -43,7 +43,21 @@
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-10"))
 #+END_SRC
+** Theme
+#+BEGIN_SRC emacs-lisp
+(use-package doom-themes
+  :ensure t
+  :config
+  (load-theme 'doom-city-lights t))
+#+END_SRC
 * Packages
+** Powerline
+#+BEGIN_SRC emacs-lisp
+(use-package powerline
+  :ensure t
+  :init
+  (powerline-default-theme))
+#+END_SRC
 ** Wakatime
 #+BEGIN_SRC emacs-lisp
 (use-package wakatime-mode
