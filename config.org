@@ -9,6 +9,10 @@
  "Reload configuration file"
  (interactive)
  (load-file "/home/aiden/.emacs.d/init.el"))
+(defun aiden/open-config ()
+ "Open configuration file"
+ (interactive)
+ (find-file "/home/aiden/.config/emacs/config.org"))
 #+END_SRC
 * Keybindings
 ** Find-File-In-Project
@@ -18,6 +22,10 @@
 ** Reload config
 #+BEGIN_SRC emacs-lisp
 (global-set-key (kbd "C-c r") 'aiden/reload)
+#+END_SRC
+** Open config
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-c g") 'aiden/open-config)
 #+END_SRC
 * Settings
 ** Run on Save
