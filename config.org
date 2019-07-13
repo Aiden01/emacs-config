@@ -51,6 +51,12 @@
   (load-theme 'doom-city-lights t))
 #+END_SRC
 * Packages
+** Flycheck
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
+#+END_SRC
 ** Powerline
 #+BEGIN_SRC emacs-lisp
 (use-package powerline
