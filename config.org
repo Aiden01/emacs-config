@@ -1,0 +1,118 @@
+# -*- mode: org; coding: utf-8; -*-
+#+TITLE: My Emacs configuration
+#+AUTHOR: Aiden
+#+STARTUP: indent
+
+* Functions
+#+BEGIN_SRC emacs-lisp
+(defun aiden/reload ()
+ "Reload configuration file"
+ (interactive)
+ (load-file "/home/aiden/.emacs.d/init.el"))
+#+END_SRC
+* Keybindings
+** Find-File-In-Project
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-x c") 'find-file-in-project)
+#+END_SRC
+** Reload config
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-c r") 'aiden/reload)
+#+END_SRC
+* Settings
+** Run on Save
+#+BEGIN_SRC emacs-lisp
+(use-package auto-shell-command
+  :config
+  (ascmd:add '("/**/*.*\.hs"       "brittany --write-mode=inplace $FILE")))
+#+END_SRC
+** Author
+#+BEGIN_SRC emacs-lisp
+(setq-default user-full-name "Aiden"
+              user-mail-address "liangu@protonmail.com")
+#+END_SRC
+** Font
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-10"))
+#+END_SRC
+* Packages
+** Wakatime
+#+BEGIN_SRC emacs-lisp
+(use-package wakatime-mode
+  :ensure t
+  :custom
+  (wakatime-cli-path "/home/aiden/.nix-profile/bin/wakatime")
+  (wakatime-api-key "673d86e8-467c-4cea-80d7-00b6b5ff2d1c")
+  :init
+  (global-wakatime-mode))
+#+END_SRC
+** Discord presence
+#+BEGIN_SRC emacs-lisp
+(use-package elcord
+  :ensure t
+  :custom
+  (elcord-use-major-mode-as-main-icon t)
+  :init
+  (elcord-mode))
+#+END_SRC
+
+** Nix
+#+BEGIN_SRC emacs-lisp
+(use-package nix-mode
+ :ensure t
+ :init
+ (nix-mode))
+#+END_SRC
+** Programming
+*** Lsp-mode
+#+BEGIN_SRC emacs-lisp
+(use-package lsp-mode
+  :ensure t
+  :init
+  (lsp-mode))
+#+END_SRC
+*** Rust
+#+BEGIN_SRC emacs-lisp
+(use-package rust-mode
+  :ensure t
+  :config
+  (add-hook 'rust-mode-hook #'racer-mode)
+  (add-hook 'racer-mode-hook #'eldoc-mode)
+  (add-hook 'racer-mode-hook #'company-mode)
+  (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+  (setq company-tooltip-align-annotations t)
+  :init
+  (rust-mode))
+#+END_SRC
+*** Haskell
+#+BEGIN_SRC emacs-lisp
+
+(use-package haskell-mode
+  :ensure t
+  :config
+  (setq haskell-process-type 'cabal-new-repl)
+  (setq haskell-process-log t)
+  (require 'haskell-interactive-mode)
+  (require 'haskell-process)
+  (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+  (add-hook 'haskell-mode-hook #'hindent-mode)
+  (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-or-reload)
+  (define-key haskell-mode-map (kbd "C-`") 'haskell-interactive-bring)
+  (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
+  (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
+  (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
+  (define-key haskell-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
+  (define-key haskell-mode-map (kbd "C-c c") 'haskell-process-cabal)
+  :init
+  (haskell-mode)
+  (helm-mode 1))
+#+END_SRC
+*** Kotlin
+#+BEGIN_SRC emacs-lisp
+(use-package kotlin-mode
+  :ensure t
+  :config
+  (add-hook 'after-init-hook #'global-flycheck-mode)
+  :init
+  (kotlin-mode))
+#+END_SRC
