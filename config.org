@@ -56,6 +56,12 @@
 (use-package flycheck
   :ensure t
   :init (global-flycheck-mode))
+
+;; For haskell
+(use-package flycheck-haskell
+  :ensure t
+  :init
+  (add-hook 'haskell-mode-hook #'flycheck-haskell-setup))
 #+END_SRC
 ** Powerline
 #+BEGIN_SRC emacs-lisp
@@ -103,6 +109,7 @@
 #+BEGIN_SRC emacs-lisp
 (use-package rust-mode
   :ensure t
+  :mode "'\\.rs\\'"
   :config
   (add-hook 'rust-mode-hook #'racer-mode)
   (add-hook 'racer-mode-hook #'eldoc-mode)
