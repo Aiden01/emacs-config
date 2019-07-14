@@ -126,9 +126,17 @@
 #+END_SRC
 *** Haskell
 #+BEGIN_SRC emacs-lisp
-
 (use-package haskell-mode
   :ensure t
+  :mode "'\\.hs\\'"
   :init
   (haskell-mode))
+#+END_SRC
+*** Rust
+#+BEGIN_SRC emacs-lisp
+(use-package rust-mode
+ :ensure t
+ :mode "'\\.rs\\'"
+ :init
+ (rust-mode))
 #+END_SRC
