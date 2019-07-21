@@ -45,6 +45,7 @@
 #+END_SRC
 ** Theme
 #+BEGIN_SRC emacs-lisp
+(line-number-mode t)
 (use-package doom-themes
   :if (display-graphic-p)
   :custom-face
@@ -69,7 +70,6 @@
   :config
   (doom-modeline-mode))
 #+END_SRC
-* Packages
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
@@ -139,4 +139,19 @@
  :mode "'\\.rs\\'"
  :init
  (rust-mode))
+#+END_SRC
+*** Ocaml
+#+BEGIN_SRC emacs-lisp
+(use-package tuareg
+  :ensure t
+  :init
+  (tuareg-mode))
+#+END_SRC
+*** Idris
+#+BEGIN_SRC emacs-lisp
+(use-package idris-mode
+  :ensure t
+  :mode "'\\.idr'"
+  :init
+  (idris-mode))
 #+END_SRC
