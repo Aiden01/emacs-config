@@ -43,9 +43,27 @@
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-10"))
 #+END_SRC
+** Dashboard
+#+BEGIN_SRC emacs-lisp
+(setq inhibit-startup-screen t)
+(use-package dashboard
+  :ensure t
+  :custom
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
+  (dashboard-set-footer nil)
+  (dashboard-set-navigator nil)
+  (dashboard-center-content t)
+  :config
+  (dashboard-setup-startup-hook))
+#+END_SRC
 ** Theme
 #+BEGIN_SRC emacs-lisp
 (line-number-mode t)
+(tool-bar-mode -1)
+(menu-bar-mode -1)
+(scroll-bar-mode -1)
+(toggle-scroll-bar -1)
 (use-package doom-themes
   :if (display-graphic-p)
   :custom-face
