@@ -17,7 +17,7 @@
 * Keybindings
 ** Find-File-In-Project
 #+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "C-x c") 'find-file-in-project)
+  (global-set-key (kbd "C-x c") 'projectile-find-file)
 #+END_SRC
 ** Reload config
 #+BEGIN_SRC emacs-lisp
@@ -28,77 +28,209 @@
 (global-set-key (kbd "C-c g") 'aiden/open-config)
 #+END_SRC
 * Settings
+** Ensure
+#+BEGIN_SRC
+(setq-default use-package-always-ensure t)
+#+END_SRC
+** Hydra
+#+BEGIN_SRC emacs-lisp
+(defhydra hydra-buffer-menu (:color pink
+                             :hint nil)
+  "
+^Mark^             ^Unmark^           ^Actions^          ^Search
+^^^^^^^^-----------------------------------------------------------------
+_m_: mark          _u_: unmark        _x_: execute       _R_: re-isearch
+_s_: save          _U_: unmark up     _b_: bury          _I_: isearch
+_d_: delete        ^ ^                _g_: refresh       _O_: multi-occur
+_D_: delete up     ^ ^                _T_: files only: % -28`Buffer-menu-files-only
+_~_: modified
+"
+  ("m" Buffer-menu-mark)
+  ("u" Buffer-menu-unmark)
+  ("U" Buffer-menu-backup-unmark)
+  ("d" Buffer-menu-delete)
+  ("D" Buffer-menu-delete-backwards)
+  ("s" Buffer-menu-save)
+  ("~" Buffer-menu-not-modified)
+  ("x" Buffer-menu-execute)
+  ("b" Buffer-menu-bury)
+  ("g" revert-buffer)
+  ("T" Buffer-menu-toggle-files-only)
+  ("O" Buffer-menu-multi-occur :color blue)
+  ("I" Buffer-menu-isearch-buffers :color blue)
+  ("R" Buffer-menu-isearch-buffers-regexp :color blue)
+  ("c" nil "cancel")
+  ("v" Buffer-menu-select "select" :color blue)
+  ("o" Buffer-menu-other-window "other-window" :color blue)
+  ("q" quit-window "quit" :color blue))
+
+(define-key Buffer-menu-mode-map "C-." 'hydra-buffer-menu/body)
+#+END_SRC
+** Projectile
+#+BEGIN_SRC emacs-lisp
+(use-package projectile
+ :ensure t
+ :config
+ (projectile-mode +1))
+#+END_SRC
+** Backup files
+#+BEGIN_SRC emacs-lisp
+(setq-default backup-inhibited t
+                auto-save-default nil
+                create-lockfiles nil
+                make-backup-files nil)
+#+END_SRC
 ** Run on Save
 #+BEGIN_SRC emacs-lisp
 (use-package auto-shell-command
-  :config
-  (ascmd:add '("/**/*.*\.hs"       "brittany --write-mode=inplace $FILE")))
+  :init
+  (ascmd:add '("/**/*.*\.hs"       "/home/aiden/.local/bin/brittany --write-mode=inplace $FILE")))
 #+END_SRC
 ** Author
 #+BEGIN_SRC emacs-lisp
 (setq-default user-full-name "Aiden"
               user-mail-address "liangu@protonmail.com")
 #+END_SRC
+** Confirmation messages
+#+BEGIN_SRC emacs-lisp
+(defalias 'yes-or-no-p (lambda (&rest _) t))
+(setq-default confirm-kill-emacs nil)
+#+END_SRC
 ** Font
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'default-frame-alist '(font . "DejaVu Sans Mono-10"))
+#+END_SRC
+** Magit
+#+BEGIN_SRC emacs-lisp
+(use-package magit
+ :ensure t
+ :config
+ (magit-mode))
 #+END_SRC
 ** Dashboard
 #+BEGIN_SRC emacs-lisp
 (setq inhibit-startup-screen t)
 (use-package dashboard
-  :ensure t
   :custom
   (dashboard-set-heading-icons t)
-  (dashboard-set-file-icons t)
   (dashboard-set-footer nil)
-  (dashboard-set-navigator nil)
+  (dashboard-set-file-icons t)
+  (dashboard-set-init-info t)
+  (dashboard-set-navigator t)
   (dashboard-center-content t)
   :config
   (dashboard-setup-startup-hook))
 #+END_SRC
 ** Theme
 #+BEGIN_SRC emacs-lisp
-(line-number-mode t)
-(tool-bar-mode -1)
-(menu-bar-mode -1)
-(scroll-bar-mode -1)
-(toggle-scroll-bar -1)
-(use-package doom-themes
-  :if (display-graphic-p)
-  :custom-face
-  (font-lock-function ((t (:foreground "#e06c75"))))
+    (line-number-mode t)
+    (tool-bar-mode -1)
+    (menu-bar-mode -1)
+    (scroll-bar-mode -1)
+    (toggle-scroll-bar -1)
+    (use-package doom-themes
+    :if (display-graphic-p)
+    :custom-face
+    (font-lock-function ((t (:foreground "#e06c75"))))
+    :custom
+    (doom-vibrant-brighter-comments t)
+    (doom-vibrant-brighter-modeline t)
+    :config
+    (doom-themes-org-config)
+    (load-theme 'doom-vibrant t))
+#+END_SRC
+** Parens
+#+BEGIN_SRC emacs-lisp
+(use-package rainbow-delimiters
+  :defer t
+  :hook
+  (prog-mode . rainbow-delimiters-mode))
+
+(use-package smartparens
+  :defer t
+  :hook
+  (prog-mode . smartparens-mode)
   :custom
-  (doom-vibrant-brighter-comments t)
-  (doom-vibrant-brighter-modeline t)
+  (sp-escape-quotes-after-insert nil)
   :config
-  (doom-themes-org-config)
-  (load-theme 'doom-vibrant t))
+  (require 'smartparens-config))
+
+(show-paren-mode t)
+#+END_SRC
+** Ivy
+#+BEGIN_SRC emacs-lisp
+(use-package ivy
+  :bind
+  ([switch-to-buffer] . ivy-switch-buffer)
+  (:map ivy-minibuffer-map
+        ("<return>" . ivy-alt-done)
+        ("C-s" . ivy-next-line)
+        ("C-r" . ivy-previous-line))
+  :custom-face
+  (ivy-current-match ((t (:background "#3d4451"))))
+  :custom
+  (ivy-use-virtual-buffers t)
+  (ivy-count-format "%d/%d ")
+  (ivy-height 20)
+  (ivy-display-style 'fancy)
+  (ivy-format-function 'ivy-format-function-line)
+  (ivy-wrap t)
+  (ivy-action-wrap t)
+  (ivy-re-builders-alist
+   '((t . ivy--regex-plus)))
+  (ivy-initial-inputs-alist nil)
+  :config
+  (ivy-mode))
+(use-package counsel
+  :after ivy
+  :config
+  (counsel-mode))
+#+END_SRC
+** Completion
+#+BEGIN_SRC emacs-lisp
+(use-package company
+  :bind
+  ("M-/" . company-complete)
+  (:map company-active-map
+        ("M-/" . company-other-backend)
+        ("M-n" . nil)
+        ("M-p" . nil)
+        ("C-n" . company-select-next)
+        ("C-p" . company-select-previous))
+  :custom-face
+  (company-tooltip ((t (:foreground "#abb2bf" :background "#30343c"))))
+  (company-tooltip-annotation ((t (:foreground "#abb2bf" :background "#30343c"))))
+  (company-tooltip-selection ((t (:foreground "#abb2bf" :background "#393f49"))))
+  (company-tooltip-mouse ((t (:background "#30343c"))))
+  (company-tooltip-common ((t (:foreground "#abb2bf" :background "#30343c"))))
+  (company-tooltip-common-selection ((t (:foreground "#abb2bf" :background "#393f49"))))
+  (company-preview ((t (:background "#30343c"))))
+  (company-preview-common ((t (:foreground "#abb2bf" :background "#30343c"))))
+  (company-scrollbar-fg ((t (:background "#30343c"))))
+  (company-scrollbar-bg ((t (:background "#30343c"))))
+  (company-template-field ((t (:foreground "#282c34" :background "#c678dd"))))
+  :custom
+  (company-require-match 'never)
+  (company-dabbrev-downcase nil)
+  (company-tooltip-align-annotations t)
+  (company-idle-delay 128)
+  (company-minimum-prefix-length 128)
+  :config
+  (global-company-mode t))
 #+END_SRC
 ** Modeline
 #+BEGIN_SRC emacs-lisp
-
+(line-number-mode t)
+(column-number-mode t)
 (use-package doom-modeline
-  :if (display-graphic-p)
   :custom
   (doom-modeline-icon t)
   (doom-modeline-major-mode-icon t)
   (doom-modeline-version t)
   (doom-modeline-buffer-file-name-style 'file-name)
+  :hook (after-init . doom-modeline-mode)
   :config
   (doom-modeline-mode))
-#+END_SRC
-** Flycheck
-#+BEGIN_SRC emacs-lisp
-(use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode))
-
-;; For haskell
-(use-package flycheck-haskell
-  :ensure t
-  :init
-  (add-hook 'haskell-mode-hook #'flycheck-haskell-setup))
 #+END_SRC
 ** Powerline
 #+BEGIN_SRC emacs-lisp
@@ -117,16 +249,6 @@
   :init
   (global-wakatime-mode))
 #+END_SRC
-** Discord presence
-#+BEGIN_SRC emacs-lisp
-(use-package elcord
-  :ensure t
-  :custom
-  (elcord-use-major-mode-as-main-icon t)
-  :init
-  (elcord-mode))
-#+END_SRC
-
 ** Nix
 #+BEGIN_SRC emacs-lisp
 (use-package nix-mode
@@ -134,13 +256,22 @@
  :init
  (nix-mode))
 #+END_SRC
+** Discord
+#+BEGIN_SRC emacs-lisp
+(use-package elcord
+ :config
+ (elcord-mode))
+#+END_SRC
 ** Programming
 *** Lsp-mode
 #+BEGIN_SRC emacs-lisp
 (use-package lsp-mode
-  :ensure t
-  :init
-  (lsp-mode))
+  :custom
+  (lsp-enable-snippet t))
+(use-package lsp-ui
+  :after lsp-mode
+  :hook
+  (lsp-mode . lsp-ui-mode))
 #+END_SRC
 *** Haskell
 #+BEGIN_SRC emacs-lisp
@@ -149,6 +280,20 @@
   :mode "'\\.hs\\'"
   :init
   (haskell-mode))
+(use-package flymake-hlint
+  :ensure t
+  :init
+  (add-hook 'haskell-mode-hook 'flymake-hlint-load))
+(use-package dante
+  :ensure t
+  :after haskell-mode
+  :commands 'dante-mode
+  :init
+  (add-hook 'haskell-mode-hook 'flycheck-mode)
+  ;; OR:
+  ;; (add-hook 'haskell-mode-hook 'flymake-mode)
+  (add-hook 'haskell-mode-hook 'dante-mode)
+  )
 #+END_SRC
 *** Rust
 #+BEGIN_SRC emacs-lisp
@@ -165,11 +310,47 @@
   :init
   (tuareg-mode))
 #+END_SRC
-*** Idris
+*** Purescript
 #+BEGIN_SRC emacs-lisp
-(use-package idris-mode
-  :ensure t
-  :mode "'\\.idr'"
-  :init
-  (idris-mode))
+(use-package purescript-mode
+ :config
+ (purescript-mode))
 #+END_SRC
+*** Web mode
+#+BEGIN_SRC emacs-lisp
+(use-package web-mode
+  :ensure t
+  :mode
+  (("\\.html?\\'"       . web-mode)
+   ("\\.phtml\\'"       . web-mode)
+   ("\\.djhtml\\'"      . web-mode)
+   ("\\.jsx\\'"         . web-mode)
+   ("\\.tsx\\'"         . web-mode))
+  :config
+  ;; Highlight the element under the cursor.
+  (setq-default web-mode-enable-current-element-highlight t)
+  (eval-after-load "web-mode"
+    '(set-face-background 'web-mode-current-element-highlight-face "LightCoral"))
+  :custom
+  (web-mode-attr-indent-offset 2)
+  (web-mode-block-padding 2)
+  (web-mode-css-indent-offset 2)
+  (web-mode-code-indent-offset 2)
+  (web-mode-comment-style 2)
+  (web-mode-enable-current-element-highlight t)
+  (web-mode-markup-indent-offset 2))
+#+END_SRC
+*** Typescript
+#+BEGIN_SRC emacs-lisp
+(typescript-mode)
+(use-package tss
+ :ensure t
+ :config
+ (typescript-mode))
+#+END_SRC
+*** Kotlin
+#+BEGIN_SRC emacs-lisp
+(use-package kotlin-mode
+ :ensure t
+ :init (kotlin-mode))
+#+END_SRC 
